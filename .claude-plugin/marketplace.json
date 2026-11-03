@@ -1,0 +1,11 @@
+{
+  "name": "speech-studio-voice",
+  "owner": { "name": "timoncool", "url": "https://github.com/timoncool" },
+  "plugins": [
+    {
+      "name": "studio-voice",
+      "source": "./",
+      "description": "Real-time voice bridge to Speech Studio: a status band with controls, Claude's replies spoken aloud, your speech submitted back"
+    }
+  ]
+}
