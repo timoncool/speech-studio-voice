@@ -206,10 +206,10 @@ export const register: Register = on_ => {
       if (s.engine) detail.push({ text: `${s.engine}${s.voice ? ` · ${s.voice}` : ''}`, prio: 60 })
       detail.push({ text: `агент ${s.agent ? 'есть' : 'нет'}`, prio: 40 })
     }
-    const conn = up ? '● на связи' : '○ офлайн'
+    const conn = up ? 'на связи' : 'офлайн'
     const hint = isOn && up && s && !s.window ? 'открой Live, чтобы озвучивать' : ''
     const BUTTONS_WIDTH = 32 // ● мост · мьют · Haiku, with their gaps
-    const fixed = 'Speech Studio'.length + 3 + conn.length + (hint ? 3 + hint.length : 0) + BUTTONS_WIDTH
+    const fixed = '▎ Speech Studio'.length + 3 + conn.length + (hint ? 3 + hint.length : 0) + BUTTONS_WIDTH
     let room = Math.max(0, e.props.bodyColumns - fixed)
     const keep: Seg[] = []
     for (const seg of [...detail].sort((a, b) => b.prio - a.prio)) {
@@ -226,7 +226,7 @@ export const register: Register = on_ => {
         <Box flexDirection="row" columnGap={2}>
           <Box flexGrow={1}>
             <Text wrap="truncate-end">
-              <Text color="claude" bold>Speech Studio</Text>
+              <Text color="#4cc2ff" bold>▎ Speech Studio</Text>
               <Text color="inactive"> · </Text>
               <Text color={up ? 'success' : 'inactive'}>{conn}</Text>
               {shown.map((seg, i) => (
@@ -243,7 +243,9 @@ export const register: Register = on_ => {
               ) : null}
             </Text>
           </Box>
-          <Button key="bridge" plain label={isOn ? '● мост' : '○ мост'} onPress={() => void toggleBridge($).catch(() => {})} />
+          <Button key="bridge" plain onPress={() => void toggleBridge($).catch(() => {})}>
+            <Text color={isOn ? '#4cc2ff' : 'inactive'}>{isOn ? 'мост вкл' : 'мост выкл'}</Text>
+          </Button>
           <Button key="mute" plain label={isMuted ? 'размьют' : 'мьют'} onPress={() => void toggleMute($).catch(() => {})} />
           <Button key="haiku" plain label={useCompress ? 'Haiku ✓' : 'Haiku'} onPress={() => void toggleCompress($).catch(() => {})} />
         </Box>
