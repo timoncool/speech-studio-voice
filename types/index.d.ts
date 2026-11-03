@@ -13,13 +13,18 @@ export type StudioStatus = {
   voice: string
 }
 
+/** How Claude's replies are voiced: off, read in full, or summarized first through a model. */
+export type SpeakMode = 'off' | 'asis' | 'haiku' | 'sonnet'
+
 declare module 'claude-code' {
   interface PluginState {
     'studio-voice': {
-      /** The bridge is on: Claude's replies are spoken and the person's speech is submitted. */
-      on: boolean
-      /** Shorten each reply through Haiku before it is spoken. */
-      compress: boolean
+      /** Listening is on: the phrases the studio recognizes (gated by its own voice gate) are submitted as prompts. */
+      listen: boolean
+      /** How Claude's replies are voiced: off, read in full, or summarized through Haiku/Sonnet. */
+      speak: SpeakMode
+      /** A reply is being sent to the studio and spoken right now. */
+      voicing: boolean
       /** The studio's last polled status, or null before the first poll. */
       status: StudioStatus | null
       /** Bumped on each poll so the band redraws. */

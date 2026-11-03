@@ -24,7 +24,7 @@ function studio(on: any) {
   })
 }
 
-test('the band shows the studio status and the control buttons', async ($, on) => {
+test('idle, the band shows the engine and voice detail', async ($, on) => {
   mock.store(on, {})
   const clock = mock.clock(on, { now: 0 })
   studio(on)
@@ -32,14 +32,30 @@ test('the band shows the studio status and the control buttons', async ($, on) =
   on('command.register', () => ({ value: { command: 'voice' } }))
   on('ui.render', ($, e) => $.ui.resolve(e).Box({ children: [] }))
   await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'voice', args: 'on', ...RUN })
   await clock.advance(2500) // one status poll
 
   const ui = await $.ui.mount({ plugin: 'studio-voice', surface: 'terminal', ...BAND })
   expect(await ui.find({ type: 'Text', text: /на связи/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /qwen3-tts/ })).toBeDefined()
-  expect(await ui.find({ type: 'Button', text: /мост/ })).toBeDefined()
-  expect(await ui.find({ type: 'Button', text: /мьют/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('with the loop live, the band shows the phase and the two control buttons', async ($, on) => {
+  mock.store(on, {})
+  const clock = mock.clock(on, { now: 0 })
+  studio(on)
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: { command: 'voice' } }))
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.render', ($, e) => $.ui.resolve(e).Box({ children: [] }))
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  await $.command.run({ command: 'voice', args: 'on', ...RUN }) // listening on
+  await $.command.run({ command: 'voice', args: 'haiku', ...RUN }) // speak = summarize via Haiku
+  await clock.advance(2500) // one status poll
+
+  const ui = await $.ui.mount({ plugin: 'studio-voice', surface: 'terminal', ...BAND })
+  expect(await ui.find({ type: 'Text', text: /эй Клодик/ })).toBeDefined()
+  expect(await ui.find({ type: 'Button', text: /🎤/ })).toBeDefined()
   expect(await ui.find({ type: 'Button', text: /Haiku/ })).toBeDefined()
   await ui.unmount()
 })
@@ -58,13 +74,25 @@ test('the band is visible even before the studio answers, showing it offline', a
   await ui.unmount()
 })
 
-test('/voice сжатие toggles the Haiku shortening', async ($, on) => {
+test('/voice sonnet sets the speaking mode to summarize through Sonnet', async ($, on) => {
   mock.store(on, {})
   mock.clock(on, { now: 0 })
   studio(on)
   on('session.start', ($, e) => ({ cwd: e.cwd }))
   on('command.register', () => ({ value: { command: 'voice' } }))
   await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
-  const r = await $.command.run({ command: 'voice', args: 'сжатие', ...RUN })
-  expect(r.text).toContain('включено')
+  const r = await $.command.run({ command: 'voice', args: 'sonnet', ...RUN })
+  expect(r.text).toContain('Sonnet')
+  expect(r.text).toContain('выжимку')
+})
+
+test('/voice промпт prints the compression prompt', async ($, on) => {
+  mock.store(on, {})
+  mock.clock(on, { now: 0 })
+  studio(on)
+  on('session.start', ($, e) => ({ cwd: e.cwd }))
+  on('command.register', () => ({ value: { command: 'voice' } }))
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  const r = await $.command.run({ command: 'voice', args: 'промпт', ...RUN })
+  expect(r.text).toContain('short spoken digest')
 })
